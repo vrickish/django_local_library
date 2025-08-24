@@ -16,6 +16,11 @@ def index(request):
     # The 'all()' is implied by default.
     num_authors = Author.objects.count()
 
+    # Number of visits to this view, as counted in the session variable.
+    num_visits = request.session.get('num_visits', 0)
+    num_visits += 1
+    request.session['num_visits'] = num_visits
+    
     # Count for the genres
     num_genres = Genre.objects.count()
 
@@ -30,7 +35,39 @@ def index(request):
         'num_authors': num_authors,
         'num_genres': num_genres,
         'num_books_with_the': num_books_with_the,
+        'num_visits': num_visits,
     }
 
     # Render the HTML template index.html with the data in the context variable
     return render(request, 'index.html', context=context)
+
+# To create a generic list view for the Books
+from django.views import generic
+
+class BookListView(generic.ListView):
+    model = Book
+    context_object_name = 'book_list'  # your own name for the list as a template variable
+    # queryset = Book.objects.filter(title__icontains='war')[:5] # Get 5 books containing the title war
+    template_name = 'books/book_list.html'
+    paginate_by = 5
+
+# To create a generic detail view for the Books
+class BookDetailView(generic.DetailView):
+    model = Book
+    context_object_name = 'book'  # your own name for the book as a template variable
+    template_name = 'books/book_detail.html'
+
+# Create a generic list view for the Authors
+class AuthorListView(generic.ListView):
+    model = Author
+    context_object_name = 'author_list'
+    template_name = 'authors/author_list.html'
+    paginate_by = 5
+
+class AuthorDetailView(generic.DetailView):
+    model = Author
+    context_object_name = 'author'
+    template_name = 'authors/author_detail.html'
+    
+
+
